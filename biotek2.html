@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioteknologi Seru</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation;
+        }
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100vh;
+            max-height: 900px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .btn-option {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-option:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .correct {
+            animation: correct-answer 0.5s ease-in-out;
+            background-color: #4ade80 !important; /* green-400 */
+            color: white !important;
+        }
+        .wrong {
+            animation: wrong-answer 0.5s ease-in-out;
+            background-color: #f87171 !important; /* red-400 */
+            color: white !important;
+        }
+
+        @keyframes correct-answer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes wrong-answer {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .character-enter {
+            animation: character-enter-anim 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes character-enter-anim {
+            0% { transform: scale(0.5) rotate(-45deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .character-win {
+            animation: dance 2s infinite ease-in-out;
+        }
+        
+        @keyframes dance {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
+
+        #character-dolly.dance { animation-delay: 0.2s; }
+        #character-tempeh.dance { animation-delay: 0.4s; }
+        #character-yoghurt.dance { animation-delay: 0.6s; }
+        #character-inseminasi.dance { animation-delay: 0.8s; }
+
+        .feedback-popup {
+            animation: popup 0.5s ease-out;
+        }
+        @keyframes popup {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-green-50 flex items-center justify-center min-h-screen">
+    <div id="game-container" class="game-container bg-green-100 rounded-2xl overflow-hidden flex flex-col relative">
+
+        <!-- Sound Control -->
+        <button id="sound-toggle" class="absolute top-4 right-4 z-20 bg-white rounded-full p-2 shadow-md">
+            <svg id="sound-on-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+            <svg id="sound-off-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+        </button>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="flex flex-col items-center justify-center text-center p-8 h-full">
+            <h1 class="text-5xl md:text-6xl title-font text-green-800 drop-shadow-lg">Bioteknologi Seru!</h1>
+            <div class="my-8">
+                <!-- DNA Character on start screen -->
+                 <svg class="w-32 h-32" viewBox="0 0 100 100">
+                    <path d="M30,10 C10,30 10,70 30,90" stroke="#34D399" fill="none" stroke-width="8" stroke-linecap="round"/>
+                    <path d="M70,10 C90,30 90,70 70,90" stroke="#A78BFA" fill="none" stroke-width="8" stroke-linecap="round"/>
+                    <line x1="30" y1="20" x2="70" y2="20" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="22" y1="35" x2="78" y2="35" stroke="#F87171" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="20" y1="50" x2="80" y2="50" stroke="#60A5FA" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="22" y1="65" x2="78" y2="65" stroke="#EC4899" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="30" y1="80" x2="70" y2="80" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+                 </svg>
+            </div>
+            <p class="text-green-700 text-lg mb-8">Jawab 5 soal bioteknologi untuk menang!</p>
+            <button id="start-button" class="bg-green-500 hover:bg-green-600 text-white title-font text-2xl py-3 px-12 rounded-full shadow-lg transform hover:scale-105 transition-transform">
+                Mulai
+            </button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden h-full flex flex-col p-4 md:p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl title-font text-green-800">Stage <span id="stage-number">1</span>/5</h2>
+                <div class="w-full bg-green-200 rounded-full h-4 mx-4">
+                    <div id="progress-bar" class="bg-green-500 h-4 rounded-full transition-all duration-500" style="width: 20%;"></div>
+                </div>
+            </div>
+            
+            <div id="character-container" class="flex-grow flex items-center justify-center my-4">
+                <!-- Character SVG will be inserted here -->
+            </div>
+
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-4 md:p-6 shadow-inner">
+                <p id="question-text" class="text-green-900 text-center text-base md:text-lg font-bold mb-4 min-h-[80px] flex items-center justify-center"></p>
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Options buttons will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Win Screen -->
+        <div id="win-screen" class="hidden flex-col items-center justify-center text-center p-8 h-full bg-green-200">
+             <h1 class="text-5xl md:text-6xl title-font text-white drop-shadow-lg mb-4" style="text-shadow: 2px 2px 0 #15803d;">Selamat!</h1>
+             <p class="text-green-800 text-xl mb-6">Kamu berhasil menyelesaikan semua stage!</p>
+             <div class="flex justify-center items-end space-x-2 md:space-x-4 h-40">
+                <!-- All characters dancing -->
+             </div>
+             <button id="restart-button" class="mt-8 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 title-font text-2xl py-3 px-12 rounded-full shadow-lg transform hover:scale-105 transition-transform">
+                Main Lagi
+             </button>
+        </div>
+
+        <!-- Feedback Overlay -->
+        <div id="feedback-overlay" class="hidden absolute inset-0 bg-black/30 z-10 flex items-center justify-center">
+            <div class="feedback-popup bg-white rounded-xl shadow-2xl p-8 text-center">
+                <h2 id="feedback-text" class="text-4xl title-font"></h2>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const gameData = [
+            {
+                question: "Sebuah perusahaan farmasi ingin memproduksi insulin dalam jumlah besar untuk pasien diabetes. Teknik bioteknologi modern apa yang paling efisien digunakan dan mengapa?",
+                options: [
+                    "Kloning, karena dapat menghasilkan organisme yang identik dalam jumlah besar.",
+                    "Kultur jaringan, karena dapat memperbanyak sel dengan cepat.",
+                    "Rekayasa genetika, karena bakteri E. coli dapat disisipi gen insulin manusia.",
+                    "Bioremediasi, karena dapat menguraikan zat berbahaya seperti gula."
+                ],
+                correctAnswer: 2,
+                character: 'dna'
+            },
+            {
+                question: "Di sebuah lahan pertanian, petani menghadapi masalah hama ulat yang merusak tanaman jagung mereka. Solusi bioteknologi yang paling tepat untuk mengatasi masalah ini adalah...",
+                options: [
+                    "Mengembangkan jagung transgenik yang disisipi gen resisten hama.",
+                    "Menggunakan bakteri Acetobacter xylinum untuk membuat nata de coco.",
+                    "Melakukan kloning pada jagung untuk menghasilkan keturunan yang identik.",
+                    "Mengaplikasikan bioremediasi untuk membersihkan lahan dari polutan."
+                ],
+                correctAnswer: 0,
+                character: 'dolly'
+            },
+            {
+                question: "Di suatu daerah, air sungai tercemar oleh tumpahan minyak. Bioteknologi modern dapat memberikan solusi yang tepat untuk masalah ini melalui...",
+                options: [
+                    "Fitoremediasi, dengan menanam tumbuhan yang mampu menyerap polutan minyak.",
+                    "Bioremediasi, dengan memanfaatkan bakteri Pseudomonas untuk menguraikan minyak.",
+                    "Terapi gen, untuk memperbaiki gen organisme yang rusak akibat pencemaran.",
+                    "Produksi biogas, karena dapat mengubah limbah menjadi energi alternatif."
+                ],
+                correctAnswer: 1,
+                character: 'tempeh'
+            },
+            {
+                question: "Tomat Flavr Savr adalah contoh produk bioteknologi modern yang bertujuan untuk memperlambat proses pembusukan. Jika petani menanam tomat jenis ini, dampak negatif yang mungkin timbul bagi lingkungan adalah...",
+                options: [
+                    "Munculnya resistensi pada hama terhadap pestisida.",
+                    "Terganggunya keanekaragaman hayati karena plasma nutfah terancam.",
+                    "Menurunnya produksi buah dan sayuran secara signifikan.",
+                    "Adanya kontroversi etika dan moral terkait kloning manusia."
+                ],
+                correctAnswer: 1,
+                character: 'yoghurt'
+            },
+            {
+                question: "Bioteknologi konvensional dan modern sama-sama memanfaatkan organisme hidup. Manakah pernyataan berikut yang secara akurat menggambarkan perbedaan tersebut?",
+                options: [
+                    "Bioteknologi konvensional menggunakan mikroorganisme, sedangkan bioteknologi modern hanya menggunakan enzim.",
+                    "Bioteknologi konvensional menggunakan teknik sederhana dan diwariskan turun-temurun, sedangkan bioteknologi modern melibatkan manipulasi DNA.",
+                    "Bioteknologi konvensional menghasilkan produk pangan, sementara bioteknologi modern hanya menghasilkan produk kesehatan.",
+                    "Bioteknologi konvensional tidak memiliki dampak negatif, sedangkan bioteknologi modern dapat menyebabkan 'gulma super'."
+                ],
+                correctAnswer: 1,
+                character: 'inseminasi'
+            }
+        ];
+
+        // --- Character SVGs ---
+        const characters = {
+            dna: `
+                <svg class="w-32 h-32 character-enter" viewBox="0 0 100 100">
+                    <path d="M30,10 C10,30 10,70 30,90" stroke="#34D399" fill="none" stroke-width="8" stroke-linecap="round"/>
+                    <path d="M70,10 C90,30 90,70 70,90" stroke="#A78BFA" fill="none" stroke-width="8" stroke-linecap="round"/>
+                    <line x1="30" y1="20" x2="70" y2="20" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="22" y1="35" x2="78" y2="35" stroke="#F87171" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="20" y1="50" x2="80" y2="50" stroke="#60A5FA" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="22" y1="65" x2="78" y2="65" stroke="#EC4899" stroke-width="6" stroke-linecap="round"/>
+                    <line x1="30" y1="80" x2="70" y2="80" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+                 </svg>`,
+            dolly: `
+                <svg class="w-40 h-40 character-enter" viewBox="0 0 200 200">
+                    <g transform="translate(0, 10)">
+                        <!-- Legs -->
+                        <rect x="60" y="140" width="15" height="40" fill="#A1A1AA" rx="7.5"/>
+                        <rect x="85" y="140" width="15" height="40" fill="#A1A1AA" rx="7.5"/>
+                        <rect x="120" y="140" width="15" height="40" fill="#A1A1AA" rx="7.5"/>
+                        <rect x="145" y="140" width="15" height="40" fill="#A1A1AA" rx="7.5"/>
+                        <!-- Body -->
+                        <path d="M50 80 C 40 40, 160 40, 150 80 C 180 80, 180 140, 150 140 L 50 140 C 20 140, 20 80, 50 80 Z" fill="#FFFFFF" stroke="#D4D4D8" stroke-width="4"/>
+                        <!-- Head -->
+                        <circle cx="50" cy="80" r="35" fill="#F1F5F9" stroke="#94A3B8" stroke-width="3"/>
+                        <circle cx="45" cy="75" r="5" fill="#27272A"/>
+                        <circle cx="65" cy="75" r="5" fill="#27272A"/>
+                        <path d="M50 85 Q 55 95, 60 85" fill="none" stroke="#27272A" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Ear -->
+                        <path d="M20 70 Q 30 50, 40 65" fill="#F1F5F9" stroke="#94A3B8" stroke-width="3"/>
+                    </g>
+                </svg>`,
+            tempeh: `
+                <svg class="w-36 h-36 character-enter" viewBox="0 0 150 150">
+                    <!-- Body -->
+                    <rect x="25" y="30" width="100" height="100" rx="20" fill="#FDE68A" stroke="#F59E0B" stroke-width="4"/>
+                    <!-- Soybeans -->
+                    <circle cx="50" cy="60" r="8" fill="#FFFFFF" opacity="0.7"/>
+                    <circle cx="75" cy="50" r="6" fill="#FFFFFF" opacity="0.7"/>
+                    <circle cx="100" cy="70" r="9" fill="#FFFFFF" opacity="0.7"/>
+                    <circle cx="60" cy="90" r="7" fill="#FFFFFF" opacity="0.7"/>
+                    <circle cx="90" cy="110" r="8" fill="#FFFFFF" opacity="0.7"/>
+                    <circle cx="115" cy="95" r="5" fill="#FFFFFF" opacity="0.7"/>
+                    <!-- Face -->
+                    <circle cx="60" cy="75" r="7" fill="#4B5563"/>
+                    <circle cx="90" cy="75" r="7" fill="#4B5563"/>
+                    <path d="M65 95 Q 75 110, 85 95" stroke="#4B5563" stroke-width="4" fill="none" stroke-linecap="round"/>
+                </svg>`,
+            yoghurt: `
+                <svg class="w-36 h-36 character-enter" viewBox="0 0 150 150">
+                    <!-- Lid -->
+                    <ellipse cx="75" cy="35" rx="45" ry="10" fill="#3B82F6"/>
+                    <!-- Body -->
+                    <path d="M30 35 L 45 120 C 45 120, 105 120, 105 120 L 120 35 Z" fill="#EFF6FF" stroke="#93C5FD" stroke-width="4"/>
+                    <!-- Label -->
+                    <path d="M55 60 C 50 80, 100 80, 95 60" fill="#FBCFE8"/>
+                    <!-- Face -->
+                    <circle cx="65" cy="80" r="6" fill="#1E40AF"/>
+                    <circle cx="85" cy="80" r="6" fill="#1E40AF"/>
+                    <path d="M70 95 Q 75 105, 80 95" stroke="#1E40AF" stroke-width="3" fill="none" stroke-linecap="round"/>
+                </svg>`,
+            inseminasi: `
+                 <svg class="w-40 h-40 character-enter" viewBox="0 0 150 150">
+                    <!-- Syringe -->
+                    <g transform="rotate(-30 75 75)">
+                        <rect x="20" y="65" width="80" height="20" rx="5" fill="#E5E7EB"/>
+                        <rect x="100" y="60" width="10" height="30" rx="2" fill="#9CA3AF"/>
+                        <rect x="10" y="55" width="20" height="40" rx="5" fill="#3B82F6" />
+                    </g>
+                    <!-- Heart -->
+                    <g transform="translate(30, 0)">
+                        <path d="M100 40 C 90 20, 60 20, 50 40 C 40 60, 75 90, 75 90 C 75 90, 110 60, 100 40 Z" fill="#F87171"/>
+                    </g>
+                </svg>`,
+        };
+        
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const winScreen = document.getElementById('win-screen');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        
+        const stageNumberEl = document.getElementById('stage-number');
+        const progressBarEl = document.getElementById('progress-bar');
+        const characterContainer = document.getElementById('character-container');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const feedbackText = document.getElementById('feedback-text');
+
+        const soundToggle = document.getElementById('sound-toggle');
+        const soundOnIcon = document.getElementById('sound-on-icon');
+        const soundOffIcon = document.getElementById('sound-off-icon');
+
+        // --- Game State ---
+        let currentStage = 0;
+        let isAnswering = false;
+        let isMuted = false;
+
+        // --- Sound Engine (Tone.js) ---
+        let synth, correctSound, wrongSound, backgroundMusic;
+        
+        function setupSounds() {
+            synth = new Tone.Synth().toDestination();
+            correctSound = () => synth.triggerAttackRelease("C5", "8n");
+            wrongSound = () => synth.triggerAttackRelease("F#3", "8n");
+            
+            backgroundMusic = new Tone.Loop(time => {
+                synth.triggerAttackRelease("C4", "8n", time);
+                synth.triggerAttackRelease("G4", "8n", time + 0.5);
+                synth.triggerAttackRelease("E4", "8n", time + 1);
+            }, "1.5n").start(0);
+        }
+        
+        // --- Game Logic ---
+        function startGame() {
+            if (!synth) {
+                // Initialize sound on first user interaction
+                Tone.start();
+                setupSounds();
+                Tone.Transport.start();
+                if(!isMuted) backgroundMusic.start();
+            }
+            currentStage = 0;
+            isAnswering = false;
+            startScreen.classList.add('hidden');
+            winScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            loadStage(currentStage);
+        }
+
+        function loadStage(stageIndex) {
+            isAnswering = false;
+            const stageData = gameData[stageIndex];
+            
+            // Update UI elements
+            stageNumberEl.textContent = stageIndex + 1;
+            progressBarEl.style.width = `${((stageIndex + 1) / gameData.length) * 100}%`;
+            questionTextEl.textContent = stageData.question;
+            characterContainer.innerHTML = characters[stageData.character];
+            
+            // Populate options
+            optionsContainer.innerHTML = '';
+            stageData.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.innerHTML = `<span class="font-bold mr-2">${String.fromCharCode(65 + index)}.</span> ${option}`;
+                button.className = "btn-option w-full text-left p-3 rounded-lg bg-white text-green-800 shadow-md";
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (isAnswering) return;
+            isAnswering = true;
+            
+            const stageData = gameData[currentStage];
+            const buttons = optionsContainer.children;
+            const selectedButton = buttons[selectedIndex];
+
+            if (selectedIndex === stageData.correctAnswer) {
+                handleCorrectAnswer(selectedButton);
+            } else {
+                handleWrongAnswer(selectedButton);
+            }
+        }
+
+        function handleCorrectAnswer(button) {
+            if(!isMuted) correctSound();
+            button.classList.add('correct');
+            showFeedback('Benar!', 'text-green-500');
+
+            setTimeout(() => {
+                hideFeedback();
+                currentStage++;
+                if (currentStage < gameData.length) {
+                    loadStage(currentStage);
+                } else {
+                    showWinScreen();
+                }
+            }, 1500);
+        }
+
+        function handleWrongAnswer(button) {
+            if(!isMuted) wrongSound();
+            button.classList.add('wrong');
+            characterContainer.firstElementChild.style.animation = 'wrong-answer 0.5s ease-in-out';
+            showFeedback('Coba Lagi!', 'text-red-500');
+
+            setTimeout(() => {
+                hideFeedback();
+                button.classList.remove('wrong');
+                characterContainer.firstElementChild.style.animation = '';
+                isAnswering = false; // Allow user to try again
+            }, 1500);
+        }
+
+        function showFeedback(text, colorClass) {
+            feedbackText.textContent = text;
+            feedbackText.className = `text-4xl title-font ${colorClass}`;
+            feedbackOverlay.classList.remove('hidden');
+        }
+
+        function hideFeedback() {
+            feedbackOverlay.classList.add('hidden');
+        }
+
+        function showWinScreen() {
+            gameScreen.classList.add('hidden');
+            winScreen.classList.remove('hidden');
+            const winCharacterContainer = winScreen.querySelector('.flex');
+            winCharacterContainer.innerHTML = '';
+            
+            // Add all characters for the final dance
+            Object.keys(characters).forEach((key, index) => {
+                const charDiv = document.createElement('div');
+                charDiv.innerHTML = characters[key];
+                charDiv.firstElementChild.classList.remove('character-enter');
+                charDiv.firstElementChild.classList.add('character-win');
+                charDiv.firstElementChild.style.animationDelay = `${index * 0.15}s`;
+                charDiv.firstElementChild.style.width = '6rem';
+                charDiv.firstElementChild.style.height = '6rem';
+                winCharacterContainer.appendChild(charDiv);
+            });
+            if (!isMuted && backgroundMusic) {
+                backgroundMusic.stop();
+                // Play a simple win jingle
+                const now = Tone.now();
+                synth.triggerAttackRelease("C5", "8n", now);
+                synth.triggerAttackRelease("E5", "8n", now + 0.2);
+                synth.triggerAttackRelease("G5", "8n", now + 0.4);
+                synth.triggerAttackRelease("C6", "4n", now + 0.6);
+            }
+        }
+        
+        function toggleSound() {
+            isMuted = !isMuted;
+            if (isMuted) {
+                Tone.getDestination().mute = true;
+                soundOnIcon.classList.add('hidden');
+                soundOffIcon.classList.remove('hidden');
+            } else {
+                Tone.getDestination().mute = false;
+                soundOnIcon.classList.remove('hidden');
+                soundOffIcon.classList.add('hidden');
+            }
+        }
+        
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+        soundToggle.addEventListener('click', toggleSound);
+
+    </script>
+</body>
+</html>
